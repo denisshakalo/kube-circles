@@ -4,7 +4,7 @@
 Kube-Circles is the sets of very simple Ansible playbooks for rapid deployment of small production or lab Kubernetes High Available Cluster.
 With this project you also can learn Kubernetes from simplest to more complicated setups.
 
-## Common features
+## Main features
 - HA from the box
 - Minimalistic configuration using one simple inventory YAML file only.
 - No kubeadm, no containerized control-plane, no any sort of magic and spells.
