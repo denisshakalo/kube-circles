@@ -1,8 +1,8 @@
 #  Kube-Circles
 ## Kubernetes the long way
 
-Kube-Circles is the sets of very simple Ansible playbooks for rapid deployment of small production or lab Kubernetes High Available Cluster and
-With this project you also can self-learn Kubernetes from simplest to more complicated setups.
+Kube-Circles is the sets of very simple Ansible playbooks for rapid deployment of small production or lab Kubernetes High Available Cluster.
+With this project you also can learn Kubernetes from simplest to more complicated setups.
 
 ## Common features
 - HA from the box
