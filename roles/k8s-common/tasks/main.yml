@@ -1,0 +1,12 @@
+- name: Install kubernetes from CentOS repository
+  yum: name={{ item.name }} state={{ item.state }}
+  with_items:
+  - { name: kubernetes, state: latest }
+  - { name: etcd, state: latest }
+  - { name: flannel, state: latest }
+
+- name: Push common master and node k8s configs
+  template: src={{ item.src }} dest={{ item.dest }}  mode=644
+  with_items:
+    - { src: config.j2, dest: /etc/kubernetes/config }
+    - { src: flanneld.j2, dest: /etc/sysconfig/flanneld }

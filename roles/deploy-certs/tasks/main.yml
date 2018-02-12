@@ -1,0 +1,7 @@
+- name: Create remote cert directory
+  file: path=/srv/kubernetes owner=root state=directory mode=755
+  
+- name: Upload certs
+  copy: src="{{ item }}" dest=/srv/kubernetes owner=root mode=644
+  with_fileglob:
+    - /srv/kubernetes/*

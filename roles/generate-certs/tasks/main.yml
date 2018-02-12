@@ -1,0 +1,9 @@
+- name: Create local cert directory
+  local_action: file path=/srv/kubernetes owner=root state=directory mode=755
+
+- name: Copy script
+  local_action: copy src=kube-make-ca-cert.sh dest=/usr/local/bin/ mode=755
+
+- name: Generate certs locally
+  local_action: shell CERT_GROUP=kube SERVICE_CLUSTER_IP_RANGE={{service_cluster_cidr}} MASTER_IP={{api_server_vip}},{% for host in groups['master'] %}{{ hostvars[host].inventory_hostname }}{% if not loop.last %},{% endif %}{% endfor %} MASTERS={% for host in groups['master'] %}{{ hostvars[host].hostname }}{% if not loop.last %},{% endif %}{% endfor %} /usr/local/bin/kube-make-ca-cert.sh
+  run_once: true

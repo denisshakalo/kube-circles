@@ -1,0 +1,17 @@
+- name: Create container directory
+  file: path=/var/log/containers owner=kube state=directory mode=755
+  tags:
+    - cont_dir
+
+- name: Push node specific k8s configs
+  template: src={{ item.src }} dest={{ item.dest }}  mode=644
+  with_items:
+    - { src: kubelet.j2, dest: /etc/kubernetes/kubelet }
+
+- name: Enable and start services on node
+  systemd: name={{ item }} enabled=yes state=restarted
+  with_items:
+  - docker
+  - kube-proxy
+  - kubelet
+  - flanneld

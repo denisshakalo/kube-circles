@@ -1,0 +1,23 @@
+global_defs {
+  notification_email {
+  {{admin_email | default('admin@foo.com')}}
+  }
+   notification_email_from   {{admin_email | default('admin@foo.com')}}
+   smtp_server 127.0.0.1
+   smtp_connect_timeout 30
+   router_id {{hostname}}
+}
+vrrp_instance VI_1 {
+    state MASTER
+    interface {{ansible_default_ipv4.interface}}
+    virtual_router_id 51
+    priority {{keepalived_priority}}
+    advert_int 1
+    authentication {
+        auth_type PASS
+        auth_pass fretg562c
+    }
+  virtual_ipaddress {
+	  {{api_server_vip}}
+    }
+}

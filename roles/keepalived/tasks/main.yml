@@ -1,0 +1,66 @@
+- name: Depandences Installation
+  package: name={{ item.name }} state={{ item.state}}
+  with_items:
+  - { name: autoconf, state: latest }
+  - { name: automake, state: latest }
+  - { name: libtool, state: latest }
+  - { name: python-docutils, state: latest }
+  - { name: autoconf-archive, state: latest }
+  - { name: mhash-devel, state: latest }
+  - { name: openssl-devel, state: latest }
+  tags:
+    - install
+
+- name: Copy source files
+  copy: src={{ item.src }} dest={{ item.dest }} owner=root group=root mode=0644 directory_mode=yes
+  with_items:
+  - { src: keepalived-1.4.0.tar.gz, dest: /usr/src }
+  tags:
+    - install
+
+- name: Unpacking Modules Sources
+  command: "{{ item }}"
+  with_items:
+  - tar xf keepalived-1.4.0.tar.gz
+  args:
+    chdir: /usr/src
+  tags:
+    - install
+
+- name: Keepalived build and install
+  shell: "{{ item }}"
+  with_items:
+  - "./configure&&make&&make install"
+  args:
+    chdir: /usr/src/keepalived-1.4.0
+  tags:
+    - install
+
+- name: Create symlinks
+  file: src={{ item.src }} dest={{ item.dest }}  state=link
+  with_items:
+  - { src: /usr/local/etc/keepalived, dest: /etc/keepalived }
+  - { src: /usr/local/sbin/keepalived, dest: /usr/sbin/keepalived }
+  tags:
+    - install
+
+- name: Copy Common Config Files
+  copy: src={{ item.src }} dest={{ item.dest }} owner=root group=root mode=0644
+  with_items:
+  - { src: keepalived.service, dest: /etc/systemd/system }
+  - { src: keepalived, dest: /etc/sysconfig }
+  tags:
+    - install
+
+- name: Generate server-specific config Files
+  template: src={{ item.src }} dest={{ item.dest }}
+  with_items:
+  - { src: keepalived.j2, dest: /etc/keepalived/keepalived.conf }
+  tags:
+    - config
+
+
+- name: Systemd enable keepalived
+  systemd: name=keepalived enabled=yes state=restarted daemon_reload=yes
+  tags:
+    - install
