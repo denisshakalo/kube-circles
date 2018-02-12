@@ -18,11 +18,12 @@ With this project you also can learn Kubernetes from simplest to more complicate
 - Insecure
 
 ## Usage
-You need a set of virtual or hardware servers preconfigured for ssh passwordless access with CentOS 7 installed and Ansible.
-- Configure inventories/k8s-cluster file with control-plane and worker nodes IP addresses and hostnames.
-- Configure inventories/k8s-cluster file with Keepalived VIP for HA control-plane access.
-- Configure inventories/k8s-cluster file with service networks. (Optional)
+You need a set of the virtual or hardware servers, preconfigured for ssh passwordless access, with CentOS 7 installed and Ansible.
+- Configure inventories/k8s-cluster inventory file with control-plane and worker nodes IP addresses and hostnames.
+- Configure inventories/k8s-cluster inventoryfile with Keepalived VIP for HA control-plane access.
+- (Optional) Configure inventories/k8s-cluster inventory file with service networks.
 - Run ansible-playbook -i inventory/k8s-cluster roles/k8s-circle-0.yml
+- Test you new cluster
 
 ## Backlog
 - Multiple fixes and improvements
