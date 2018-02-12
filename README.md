@@ -1,5 +1,5 @@
 #  Kube-Circles
-## Kubernetes long way
+## Kubernetes the long way
 
 Kube-Circles is the sets of very simple Ansible playbooks for rapid deployment of small production or lab Kubernetes High Available Cluster and
 With this project you also can self-learn Kubernetes from simplest to more complicated setups.
@@ -17,10 +17,10 @@ With this project you also can self-learn Kubernetes from simplest to more compl
 - Insecure
 
 ## Usage
-You need a set of virtual or hardware servers preconfigured for ssh passwordless access with CentOS 7 installed and Ansible
-- Configure inventories/k8s-cluster file with control-plane and worker node IP addresses and hostnames
-- Configure inventories/k8s-cluster file with Keepalived VIP for HA control-plane access
-- Configure inventories/k8s-cluster file with service networks (Optional)
+You need a set of virtual or hardware servers preconfigured for ssh passwordless access with CentOS 7 installed and Ansible.
+- Configure inventories/k8s-cluster file with control-plane and worker nodes IP addresses and hostnames.
+- Configure inventories/k8s-cluster file with Keepalived VIP for HA control-plane access.
+- Configure inventories/k8s-cluster file with service networks. (Optional)
 - Run ansible-playbook -i inventory/k8s-cluster roles/k8s-circle-0.yml
 
 ## Backlog
