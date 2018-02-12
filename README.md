@@ -11,6 +11,7 @@ With this project you also can self-learn Kubernetes from simplest to more compl
 - Automated cert generation and deployment.
 
 ## Circle 0
+
 - CentOS distro based
 - CentOS standard repository based
 - No RBAC
@@ -29,6 +30,8 @@ You need a set of virtual or hardware servers preconfigured for ssh passwordless
 - Secure deployment
 - Multidistro deployment
 - Load Balancing instead of the Keepalived
+
+![Kube-scr](/images/kube.jpeg?raw=true "Running cluster")
 
 ## Based on
 - http://www.tothenew.com/blog/how-to-setup-kubernetes-master-ha-on-centos/ blog
