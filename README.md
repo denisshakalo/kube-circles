@@ -1,12 +1,12 @@
 #  Kube-Circles
 ## Kubernetes the long way
 
-Kube-Circles is the sets of very simple Ansible playbooks for rapid deployment of small production or lab Kubernetes bare-metal High Available Cluster.
+Kube-Circles is the set of very simple Ansible playbooks for rapid deployment of small production or lab Kubernetes bare-metal High Available Cluster.
 With this project you also can learn Kubernetes bare-metal architecture deployment from simplest to more complicated setups.
 
 ## Main features
 - HA from the box
-- Minimalistic configuration using one simple inventory YAML file only.
+- Extremely easy configuration using one simple inventory YAML file only.
 - No kubeadm, no containerized control-plane, no any sort of magic and spells.
 - Automated cert generation and deployment.
 
@@ -23,13 +23,13 @@ You need a set of  virtual or hardware servers, preconfigured for ssh passwordle
 - Configure inventories/k8s-cluster inventory file with Keepalived VIP for HA control-plane access.
 - (Optional) Configure inventories/k8s-cluster inventory file with your custom service network CIDRs.
 - Run ansible-playbook -i inventory/k8s-cluster roles/k8s-circle-0.yml
-- Test you new cluster
+- Test the new cluster
 
 ## Backlog
 - Multiple fixes and improvements
 - Google Kubernetes repository-based deployment
 - Secure deployment with RBAC
-- Multidistro deployment
+- Extended distro support
 
 
 ![Kube-scr](/images/kube.jpeg?raw=true "Running cluster")
