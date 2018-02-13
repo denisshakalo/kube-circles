@@ -14,6 +14,7 @@
   - { name: ntpdate, state: latest }
   - { name: sysstat, state: latest }
   - { name: ntp, state: latest }
+  ignore_errors: yes
 
 - name: set hostnames
   hostname:
@@ -58,4 +59,3 @@
     state: absent
   tags:
     - swap
-    
