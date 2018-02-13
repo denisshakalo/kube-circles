@@ -11,26 +11,26 @@ all:
       children:
         master:
           hosts:
-            192.168.1.43:
-              hostname: master1.home
+            192.168.1.49:
+              hostname: master1.cluster
               keepalived_priority: 200
-            192.168.1.44:
-              hostname: master2.home
+            192.168.1.50:
+              hostname: master2.cluster
               keepalived_priority: 100
-            192.168.1.45:
-              hostname: master3.home
+            192.168.1.51:
+              hostname: master3.cluster
               keepalived_priority: 50
         node:
           hosts:
-            192.168.1.46:
+            192.168.1.52:
               pod_cidr: 172.30.1.0/24
               docker_pod_bip: 172.30.1.1/24
-              hostname: node1.home
-            192.168.1.47:
+              hostname: node1.cluster
+            192.168.1.53:
               pod_cidr: 172.30.2.0/24
               docker_pod_bip: 172.30.2.1/24
-              hostname: node2.home
-            192.168.1.48:
+              hostname: node2.cluster
+            192.168.1.54:
               pod_cidr: 172.30.3.0/24
               docker_pod_bip: 172.30.3.1/24
-              hostname: node3.home
+              hostname: node3.cluster
