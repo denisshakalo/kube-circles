@@ -6,7 +6,7 @@ With this project you also can learn Kubernetes bare-metal architecture deployme
 
 ## Main features
 - HA from the box
-- Minimalistic configuration using one simple inventory YAML file only.
+- Extremely easy configuration using one simple inventory YAML file only.
 - No kubeadm, no containerized control-plane, no any sort of magic and spells.
 - Automated cert generation and deployment.
 
