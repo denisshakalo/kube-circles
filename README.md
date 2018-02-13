@@ -23,13 +23,13 @@ You need a set of  virtual or hardware servers, preconfigured for ssh passwordle
 - Configure inventories/k8s-cluster inventory file with Keepalived VIP for HA control-plane access.
 - (Optional) Configure inventories/k8s-cluster inventory file with your custom service network CIDRs.
 - Run ansible-playbook -i inventory/k8s-cluster roles/k8s-circle-0.yml
-- Test you new cluster
+- Test the new cluster
 
 ## Backlog
 - Multiple fixes and improvements
 - Google Kubernetes repository-based deployment
 - Secure deployment with RBAC
-- Multidistro deployment
+- Extended distro support
 
 
 ![Kube-scr](/images/kube.jpeg?raw=true "Running cluster")
