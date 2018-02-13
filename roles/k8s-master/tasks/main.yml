@@ -3,7 +3,7 @@
   with_items:
     - { src: etcd.conf.j2, dest: /etc/etcd/etcd.conf }
     - { src: apiserver.j2, dest: /etc/kubernetes/apiserver }
-    - { src: scheduler.j2, dest: /etc/kubernetes/scheduler }    
+    - { src: scheduler.j2, dest: /etc/kubernetes/scheduler }
     - { src: controller-manager.j2, dest: /etc/kubernetes/controller-manager }
     - { src: flannel-network.j2, dest: /etc/kubernetes/flannel-network }
     - { src: skydns-svc.yaml.j2, dest: /etc/kubernetes/skydns-svc.yaml }
@@ -34,6 +34,14 @@
   tags:
     - flannel_conf
 
+- name: Enable and start services on master
+  systemd: name={{ item }} enabled=yes state=restarted
+  with_items:
+  - kube-apiserver
+  - kube-controller-manager
+  - kube-scheduler
+  - flanneld
+
 - name: Configure cluster DNS
   shell: "{{ item }}"
   with_items:
@@ -53,11 +61,3 @@
   run_once: true
   tags:
     - dashboard
-
-- name: Enable and start services on master
-  systemd: name={{ item }} enabled=yes state=restarted
-  with_items:
-  - kube-apiserver
-  - kube-controller-manager
-  - kube-scheduler
-  - flanneld
