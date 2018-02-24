@@ -17,6 +17,9 @@ With this project you also can learn Kubernetes  infrastructure deployment from 
 - No RBAC
 - Insecure
 
+## Circle 1
+- In dev branch
+
 ## Usage
 You need a set of  virtual or hardware servers, preconfigured for ssh passwordless access, with default minimal CentOS 7 configuration installed and Ansible.
 
