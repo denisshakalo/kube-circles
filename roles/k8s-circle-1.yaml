@@ -1,0 +1,10 @@
+---
+- import_playbook: prerequisites.yaml
+- import_playbook: software-provisioning.yaml
+- import_playbook: keepalived.yaml
+- import_playbook: generate-certs.yaml
+#- import_playbook: k8s-common.yaml
+
+#- import_playbook: deploy-certs.yaml
+#- import_playbook: k8s-master.yaml
+#- import_playbook: k8s-node.yaml

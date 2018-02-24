@@ -14,14 +14,14 @@
 - name: Copy source files
   copy: src={{ item.src }} dest={{ item.dest }} owner=root group=root mode=0644 directory_mode=yes
   with_items:
-  - { src: keepalived-1.4.0.tar.gz, dest: /usr/src }
+  - { src: "{{sw_distribution_point}}/keepalived-{{keepalived_ver}}.tar.gz", dest: /usr/src }
   tags:
     - install
 
 - name: Unpacking Modules Sources
   command: "{{ item }}"
   with_items:
-  - tar xf keepalived-1.4.0.tar.gz
+  - tar xf keepalived-{{keepalived_ver}}.tar.gz
   args:
     chdir: /usr/src
   tags:
@@ -32,7 +32,7 @@
   with_items:
   - "./configure&&make&&make install"
   args:
-    chdir: /usr/src/keepalived-1.4.0
+    chdir: /usr/src/keepalived-{{keepalived_ver}}
   tags:
     - install
 

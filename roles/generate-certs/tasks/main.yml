@@ -1,9 +1,56 @@
 - name: Create local cert directory
-  local_action: file path=/srv/kubernetes owner=root state=directory mode=755
-
-- name: Copy script
-  local_action: copy src=kube-make-ca-cert.sh dest=/usr/local/bin/ mode=755
-
-- name: Generate certs locally
-  local_action: shell CERT_GROUP=kube SERVICE_CLUSTER_IP_RANGE={{service_cluster_cidr}} MASTER_IP={{api_server_vip}},{% for host in groups['master'] %}{{ hostvars[host].inventory_hostname }}{% if not loop.last %},{% endif %}{% endfor %} MASTERS={% for host in groups['master'] %}{{ hostvars[host].hostname }}{% if not loop.last %},{% endif %}{% endfor %} /usr/local/bin/kube-make-ca-cert.sh
+  local_action: file path={{ca_distribution_point}} owner=root state=directory mode=755
   run_once: true
+
+- name: Create the CA configuration files
+  local_action: template src={{ item }} dest={{ca_distribution_point}} owner=root mode=600
+  with_items:
+    - ca-config.json
+    - ca-csr.json
+    - admin-csr.json
+    - kube-proxy-csr.json
+    - kubernetes-csr.json
+  run_once: true
+
+- name: Genetate Management Certificates
+  local_action: shell {{ item }} chdir={{ca_distribution_point}}
+  with_items:
+    - cfssl gencert -initca ca-csr.json | cfssljson -bare ca
+    - cfssl gencert -ca=ca.pem -ca-key=ca-key.pem -config=ca-config.json
+      -profile=kubernetes admin-csr.json | cfssljson -bare admin
+    - cfssl gencert -ca=ca.pem -ca-key=ca-key.pem -config=ca-config.json
+      -profile=kubernetes kube-proxy-csr.json | cfssljson -bare kube-proxy
+    - cfssl gencert -ca=ca.pem -ca-key=ca-key.pem -config=ca-config.json
+      -hostname={{cluster_server_vip}},{% for host in groups['master'] %}{{ hostvars[host].inventory_hostname }},{% endfor %}{% for host in groups['master'] %}{{ hostvars[host].ansible_hostname }},{% endfor %}{% for host in groups['master'] %}{{ hostvars[host].hostname }},{% endfor %}{{api_server_vip}},{{api_server_name}},127.0.0.1,localhost,kubernetes.default -profile=kubernetes kubernetes-csr.json | cfssljson -bare kubernetes
+  run_once: true
+
+- name: Genetate Node Certificates onfiguration files
+  local_action: template src=node-csr.json dest={{ca_distribution_point}}/{{ansible_hostname}}-csr.json
+  when: "'node' in group_names"
+
+- name: Genetate Node Certificates
+  local_action: shell cfssl gencert -ca=ca.pem -ca-key=ca-key.pem
+    -config=ca-config.json -hostname={{ansible_hostname}},{{hostname}},{{inventory_hostname}}
+    -profile=kubernetes {{ansible_hostname}}-csr.json | cfssljson -bare {{ansible_hostname}}
+    chdir={{ca_distribution_point}}
+  when: "'node' in group_names"
+
+- name: Make Master ans Node Certificate Directory
+  file: path={{certs_dir}} owner=root state=directory mode=755
+
+- name : Distribute Node Certificates
+  copy: src={{ item }} dest={{certs_dir}} mode=600
+  with_items:
+    - "{{ca_distribution_point}}/ca.pem"
+    - "{{ca_distribution_point}}/{{ansible_hostname}}-key.pem"
+    - "{{ca_distribution_point}}/{{ansible_hostname}}.pem"
+  when: "'node' in group_names"
+
+- name : Distribute Master Certificates
+  copy: src={{ item }} dest={{certs_dir}} mode=600
+  with_items:
+    - "{{ca_distribution_point}}/ca.pem"
+    - "{{ca_distribution_point}}/ca-key.pem"
+    - "{{ca_distribution_point}}/kubernetes-key.pem"
+    - "{{ca_distribution_point}}/kubernetes.pem"
+  when: "'master' in group_names"

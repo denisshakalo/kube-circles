@@ -4,7 +4,7 @@
   - firewalld
   tags:
     - firewall
-  ignore_errors: yes    
+  ignore_errors: yes
 
 - name: CentOS Packages Install
   yum: name={{ item.name }} state={{ item.state }}
