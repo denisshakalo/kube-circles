@@ -60,3 +60,8 @@
     state: absent
   tags:
     - swap
+
+- name: Create service-user group
+  group: name=kube-services state=present
+  tags:
+    - srv_group
