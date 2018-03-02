@@ -1,0 +1,25 @@
+[Unit]
+Description=Kubernetes Controller Manager
+Documentation=https://github.com/kubernetes/kubernetes
+After=kube-apiserver.service
+Wants=kube-apiserver.service
+
+[Service]
+EnvironmentFile=/etc/sysconfig/kube-controller-manager
+ExecStart=/usr/local/bin/kube-controller-manager \
+  --address=0.0.0.0 \
+  --cluster-cidr=${CLUSTER_CIDR} \
+  --cluster-name=${CLUSTER_NAME} \
+  --cluster-signing-cert-file=${SIGINING_CAFILE} \
+  --cluster-signing-key-file=${SIGINING_KEY} \
+  --leader-elect=true \
+  --master=http://127.0.0.1:8080 \
+  --root-ca-file=${ROOT_CAFILE} \
+  --service-account-private-key-file=${ROOT_CA_KEY} \
+  --service-cluster-ip-range=${SERVICE_CLUSTER_CIDR} \
+  --v=2
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

@@ -12,10 +12,13 @@
     - { path: /var/lib/etcd, owner: etcd }
     - { path: /usr/local/bin, owner: root }
 
-- name: Copy source files
-  unarchive: src={{ item.src }} dest={{ item.dest }}
-  with_items:
-  - { src: "{{sw_distribution_point}}/etcd-{{etcd_ver}}-linux-amd64.tar.gz", dest: /usr/local/bin }
+- name: Extract archive
+  unarchive:
+    src: "{{sw_distribution_point}}/etcd-{{etcd_ver}}-linux-amd64.tar.gz"
+    dest: /usr/local/bin
+    extra_opts: [--strip-components=1]
+  tags:
+    - unzip
 
 - name: Copy etcd files
   copy: src={{ item.src }} dest={{ item.dest }} mode={{ item.mode }}

@@ -33,7 +33,7 @@
 - name: disable selinux
   copy:
     src: selinux
-    dest: /etc/sysconfig/selinux
+    dest: /etc/selinux/config
   tags:
     - selinux
 

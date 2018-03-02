@@ -1,0 +1,45 @@
+[Unit]
+Description=Kubernetes API Server
+Documentation=https://github.com/kubernetes/kubernetes
+After=etcd.service
+Wants=etcd.service
+
+[Service]
+EnvironmentFile=/etc/sysconfig/kube-apiserver
+ExecStart=/usr/local/bin/kube-apiserver \
+  --admission-control=Initializers,NamespaceLifecycle,NodeRestriction,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota \
+  --advertise-address=${INTERNAL_IP} \
+  --allow-privileged=true \
+  --apiserver-count=${APISERVER_COUNT} \
+  --audit-log-maxage=30 \
+  --audit-log-maxbackup=3 \
+  --audit-log-maxsize=100 \
+  --audit-log-path=/var/log/kube-apiserver-audit.log \
+  --authorization-mode=Node,RBAC \
+  --bind-address=0.0.0.0 \
+  --client-ca-file=${CLIENT_CA_FILE} \
+  --enable-swagger-ui=true \
+  --etcd-cafile=${ETCD_CAFILE} \
+  --etcd-certfile=${ETCD_CERTFILE} \
+  --etcd-keyfile=${ETCD_KEYFILE} \
+  --etcd-servers=${ETCD_SERVERS} \
+  --event-ttl=1h \
+  --experimental-encryption-provider-config=${ENC_CONFIG} \
+  --insecure-bind-address=127.0.0.1 \
+  --kubelet-certificate-authority=${KUBELET_CAFILE=} \
+  --kubelet-client-certificate=${KUBELET_CERTFILE} \
+  --kubelet-client-key=${KUBELET_KEYFILE} \
+  --kubelet-https=true \
+  --runtime-config=api/all \
+  --service-account-key-file=${CA_KEY} \
+  --service-cluster-ip-range=${SERVICE_CLUSTER_CIDR} \
+  --service-node-port-range=30000-32767 \
+  --tls-ca-file=${TLS_CAFILE} \
+  --tls-cert-file=/${TLS_CERTFILE} \
+  --tls-private-key-file=${TLS_KEYFILE}
+  --v=2
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
