@@ -1,5 +1,5 @@
 {
-  "CN": "system:node:{{ansible_hostname}}",
+  "CN": "system:node:{{ansible_fqdn}}",
   "key": {
     "algo": "rsa",
     "size": 2048

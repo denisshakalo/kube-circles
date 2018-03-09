@@ -35,6 +35,7 @@
   when: "'node' in group_names"
   tags:
     - generate
+    - generate_kubeconfig    
 
 - name: Genetate Node Certificates
   local_action: shell cfssl gencert -ca=ca.pem -ca-key=ca-key.pem
@@ -44,6 +45,7 @@
   when: "'node' in group_names"
   tags:
     - generate
+    - generate_kubeconfig
 
 - name: Generate the kubelet Kubernetes Configuration File
   local_action: shell {{ item }} chdir={{ca_distribution_point}}
@@ -52,18 +54,21 @@
        --certificate-authority=ca.pem --embed-certs=true
        --server=https://{{api_server_vip}}:6443
        --kubeconfig={{ansible_hostname}}.kubeconfig"
-    - "{{sw_distribution_point}}/kubectl config set-credentials system:node:{{ansible_hostname}}
+    - "{{sw_distribution_point}}/kubectl config set-credentials system:node:{{ansible_fqdn}}
        --client-certificate={{ansible_hostname}}.pem
        --client-key={{ansible_hostname}}-key.pem
        --embed-certs=true
        --kubeconfig={{ansible_hostname}}.kubeconfig"
     - "{{sw_distribution_point}}/kubectl config set-context default
        --cluster={{cluster_name}}
-       --user=system:node:{{ansible_hostname}}
+       --user=system:node:{{ansible_fqdn}}
        --kubeconfig={{ansible_hostname}}.kubeconfig"
+    - "{{sw_distribution_point}}/kubectl config use-context default
+      --kubeconfig={{ansible_hostname}}.kubeconfig"
   when: "'node' in group_names"
   tags:
     - generate
+    - generate_kubeconfig
 
 - name: Generate The kube-proxy Kubernetes Configuration File
   local_action: shell {{ item }} chdir={{ca_distribution_point}}
@@ -118,6 +123,7 @@
   when: "'node' in group_names"
   tags:
     - deploy
+    - deploy_kubeconfig
 
 - name : Distribute Master Certificates and configs
   copy: src={{ item }} dest={{certs_dir}} group=kube-services mode=640

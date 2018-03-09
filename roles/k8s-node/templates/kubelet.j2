@@ -1,0 +1,6 @@
+CLUSTER_DNS={{cluster_dns}}
+CLIENT_CA_FILE={{certs_dir}}/ca.pem
+CLUSTER_DOMAIN=cluster.local
+KUBECONFIG={{certs_dir}}/{{ansible_hostname}}.kubeconfig
+TLS_CERTFILE={{certs_dir}}/{{ansible_hostname}}.pem
+TLS_KEYFILE={{certs_dir}}/{{ansible_hostname}}-key.pem

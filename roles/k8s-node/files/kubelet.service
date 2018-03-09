@@ -1,0 +1,30 @@
+[Unit]
+Description=Kubernetes Kubelet
+Documentation=https://github.com/kubernetes/kubernetes
+After=docker.service
+Requires=docker.service
+
+[Service]
+EnvironmentFile=/etc/sysconfig/kubelet
+ExecStart=/usr/local/bin/kubelet \
+  --allow-privileged=true \
+  --anonymous-auth=false \
+  --authorization-mode=Webhook \
+  --client-ca-file=${CLIENT_CA_FILE} \
+  --cloud-provider= \
+  --cluster-dns=${CLUSTER_DNS} \
+  --cluster-domain=${CLUSTER_DOMAIN} \
+  --container-runtime=docker  \
+  --image-pull-progress-deadline=2m \
+  --kubeconfig=${KUBECONFIG} \
+  --network-plugin=cni \
+  --register-node=true \
+  --runtime-request-timeout=15m \
+  --tls-cert-file=${TLS_CERTFILE} \
+  --tls-private-key-file=${TLS_KEYFILE} \
+  --v=2
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

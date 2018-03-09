@@ -1,0 +1,29 @@
+- name: Install pre-requried packages
+  package:
+    name: socat
+    state: latest
+
+- name: Copy k8s binaries
+  copy: src={{ item.src}} dest=/usr/local/bin mode=755
+  with_items:
+    - { src: "{{sw_distribution_point}}/kube-proxy" }
+    - { src: "{{sw_distribution_point}}/kubelet" }
+    - { src: "{{sw_distribution_point}}/kubectl" }
+
+- name: Copy k8s systemd scripts
+  copy: src={{ item.src}} dest=/etc/systemd/system mode=644
+  with_items:
+    - { src: kubelet.service }
+    - { src: kube-proxy.service }
+
+- name: Create k8s env files from template
+  template: src={{ item.src }} dest={{ item.dest }}
+  with_items:
+    - { src: kubelet.j2, dest: /etc/sysconfig/kubelet }
+    - { src: kube-proxy.j2, dest: /etc/sysconfig/kube-proxy }
+
+- name: Start k8s services
+  systemd: name={{ item.name}} state=restarted daemon_reload=yes enabled=yes
+  with_items:
+    - { name: kubelet }
+    - { name: kube-proxy }
