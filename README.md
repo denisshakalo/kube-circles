@@ -32,7 +32,6 @@ In the inventories/k8s-cluster inventory file configure:
 - Custom service network CIDRs and SkyDNS ip (Optional)
 - Run ansible-playbook -i inventory/k8s-cluster.yaml roles/k8s-circle-1.yml
 
-Test the new cluster using http://{{api_server_vip}}:8080/ui/
 
 ## Backlog
 - Addons
