@@ -10,6 +10,13 @@
     - { src: "{{sw_distribution_point}}/kubelet" }
     - { src: "{{sw_distribution_point}}/kubectl" }
 
+- name: Extract Containerd archive
+  unarchive:
+    src: "{{sw_distribution_point}}/cri-containerd-{{containerd_ver}}.linux-amd64.tar.gz"
+    dest: /
+  tags:
+    - containerd
+
 - name: Copy k8s systemd scripts
   copy: src={{ item.src}} dest=/etc/systemd/system mode=644
   with_items:
@@ -25,5 +32,7 @@
 - name: Start k8s services
   systemd: name={{ item.name}} state=restarted daemon_reload=yes enabled=yes
   with_items:
+    - { name: containerd }
+    - { name: cri-containerd }
     - { name: kubelet }
     - { name: kube-proxy }

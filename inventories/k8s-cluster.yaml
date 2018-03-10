@@ -12,6 +12,7 @@ all:
         etcd_ver: v3.3.1
         cni_ver: v0.6.0
         flannel_ver: v0.7.0
+        containerd_ver: 1.0.0-beta.1
         cert_expiry: 87644h
         cert_ou: Kubernetes Your Way
         cluster_name: kubernetes-your-way

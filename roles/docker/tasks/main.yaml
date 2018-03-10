@@ -1,3 +1,9 @@
+- name: Stop Docker
+  systemd: name=docker state=stopped enabled=no
+  tags:
+    - configure
+  ignore_errors: yes
+
 - name: remove old versions
   package: name={{ item }} state=absent
   with_items:
@@ -5,26 +11,18 @@
     - docker-common
     - docker-selinux
     - docker-engine
+  ignore_errors: yes
 
-- name: Install pre-requried packages
-  package: name={{ item }} state=latest
-  with_items:
-    - yum-utils
-    - device-mapper-persistent-data
-    - lvm2
-    - bridge-utils
+#- name: Download and install repo
+#  shell: yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
 
-- name: Download and install repo
-  shell: yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
-
-- name: Install Docker
-  package: name=docker-ce state=latest
+#- name: Install Docker
+#  package: name=docker-ce state=latest
 
 - name: Copy Docker files
   copy: src={{ item.src }} dest={{ item.dest }} mode=644
   with_items:
-    - { src: docker.service, dest: /usr/lib/systemd/system/docker.service }
+#    - { src: docker.service, dest: /usr/lib/systemd/system/docker.service }
     - { src: 10-flannel.conf, dest: /etc/cni/net.d }
-
-- name: Start Docker
-  systemd: name=docker state=restarted daemon_reload=yes enabled=yes
+  tags:
+    - configure

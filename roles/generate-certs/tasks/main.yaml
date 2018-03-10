@@ -35,7 +35,7 @@
   when: "'node' in group_names"
   tags:
     - generate
-    - generate_kubeconfig    
+    - generate_nodeconfig
 
 - name: Genetate Node Certificates
   local_action: shell cfssl gencert -ca=ca.pem -ca-key=ca-key.pem
@@ -45,7 +45,7 @@
   when: "'node' in group_names"
   tags:
     - generate
-    - generate_kubeconfig
+    - generate_nodeconfig
 
 - name: Generate the kubelet Kubernetes Configuration File
   local_action: shell {{ item }} chdir={{ca_distribution_point}}
@@ -68,7 +68,7 @@
   when: "'node' in group_names"
   tags:
     - generate
-    - generate_kubeconfig
+    - generate_nodeconfig
 
 - name: Generate The kube-proxy Kubernetes Configuration File
   local_action: shell {{ item }} chdir={{ca_distribution_point}}
@@ -133,6 +133,27 @@
     - "{{ca_distribution_point}}/kubernetes-key.pem"
     - "{{ca_distribution_point}}/kubernetes.pem"
     - "{{ca_distribution_point}}/encryption-config.yaml"
+    - "{{ca_distribution_point}}/admin.pem"
+    - "{{ca_distribution_point}}/admin-key.pem"
   when: "'master' in group_names"
   tags:
     - deploy
+    - deploy_masterconfig
+
+
+- name: Set admin context
+  shell: "{{ item }} chdir={{certs_dir}}"
+  with_items:
+    - kubectl config set-cluster {{cluster_name}}
+      --certificate-authority=ca.pem --embed-certs=true
+      --server=https://{{api_server_vip}}:6443
+    - kubectl config set-credentials admin
+      --client-certificate=admin.pem
+      --client-key=admin-key.pem
+    - kubectl config set-context {{cluster_name}}
+      --cluster={{cluster_name}} --user=admin
+    - kubectl config use-context {{cluster_name}}
+  when: "'master' in group_names"
+  tags:
+    - deploy
+    - deploy_masterconfig

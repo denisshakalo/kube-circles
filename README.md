@@ -10,14 +10,18 @@ With this project you also can learn Kubernetes bare-metal architecture deployme
 - No kubeadm, no containerized control-plane, no any sort of magic and spells.
 - Automated cert generation and deployment.
 
-## Circle 0
+## Circle 1
+- Google Kubernetes latest repository-based deployment
+- Docker replaced by containerd
+- Secure deployment with RBAC
+
+## Circle 0 Release
 
 - CentOS distro based
 - CentOS standard repository based
 - No RBAC
 - Insecure
 
-## Circle 1
 
 ## Usage
 You need a set of  virtual or hardware servers, preconfigured for ssh passwordless access, with default minimal CentOS 7 configuration installed and Ansible.
@@ -31,9 +35,9 @@ In the inventories/k8s-cluster inventory file configure:
 Test the new cluster using http://{{api_server_vip}}:8080/ui/
 
 ## Backlog
+- Addons
 - Multiple fixes and improvements
-- Google Kubernetes repository-based deployment
-- Secure deployment with RBAC
+- Cloud deployment
 - Extended distro support
 
 

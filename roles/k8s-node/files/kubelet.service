@@ -1,8 +1,8 @@
 [Unit]
 Description=Kubernetes Kubelet
 Documentation=https://github.com/kubernetes/kubernetes
-After=docker.service
-Requires=docker.service
+After=cri-containerd.service
+Requires=cri-containerd.service
 
 [Service]
 EnvironmentFile=/etc/sysconfig/kubelet
@@ -14,7 +14,8 @@ ExecStart=/usr/local/bin/kubelet \
   --cloud-provider= \
   --cluster-dns=${CLUSTER_DNS} \
   --cluster-domain=${CLUSTER_DOMAIN} \
-  --container-runtime=docker  \
+  --container-runtime=remote \
+  --container-runtime-endpoint=unix:///var/run/cri-containerd.sock \
   --image-pull-progress-deadline=2m \
   --kubeconfig=${KUBECONFIG} \
   --network-plugin=cni \
