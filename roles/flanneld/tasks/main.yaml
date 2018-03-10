@@ -1,0 +1,50 @@
+- name: Make flanneld directories
+  file: path={{ item.path }} owner={{ item.owner }} state=directory mode=755
+  with_items:
+    - { path: /opt/cni/bin, owner: root }
+    - { path: /etc/cni/net.d, owner: root }
+  tags:
+    - flannel_dirs
+
+- name: Copy flanneld files
+  copy: src={{ item.src }} dest={{ item.dest }} mode={{ item.mode }}
+  with_items:
+    - { src: "{{sw_distribution_point}}/flanneld-amd64", dest: /usr/local/bin/flanneld, mode: 755}
+    - { src: flanneld.service, dest: /etc/systemd/system, mode: 644}
+
+- name: Extract CNI archive
+  unarchive:
+    src: "{{sw_distribution_point}}/cni-plugins-amd64-{{cni_ver}}.tgz"
+    dest: /opt/cni/bin
+    extra_opts: [--strip-components=1]
+  tags:
+    - unzip
+
+- name: Create flanneld env from master template
+  template:
+    src: flanneld-master.j2
+    dest: /etc/sysconfig/flanneld
+  when: "'master' in group_names"
+
+- name: Create flanneld env from node template
+  template:
+    src: flanneld-node.j2
+    dest: /etc/sysconfig/flanneld
+  when: "'node' in group_names"
+
+- name: Configure flanneld Network
+  shell: etcdctl --cert-file "{{certs_dir}}/kubernetes.pem"
+                 --key-file "{{certs_dir}}/kubernetes-key.pem"
+                 --ca-file "{{certs_dir}}/ca.pem"
+                 --endpoints "{% for host in groups['master'] %}https://{{ hostvars[host].inventory_hostname }}:2379{% if not loop.last %},{% endif %}{% endfor %}"
+                 set {{cluster_name}}/network/config '{"Network":"{{cluster_cidr}}","SubnetLen":24,"Backend":{"Type":"vxlan"}}'
+  run_once: true
+  ignore_errors: yes
+  when: "'master' in group_names"
+
+- name: Start services
+  systemd:
+    name: flanneld
+    state: restarted
+    enabled: yes
+    daemon_reload: yes

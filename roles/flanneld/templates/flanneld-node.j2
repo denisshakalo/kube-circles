@@ -1,0 +1,7 @@
+FLANNEL_ETCD_ENDPOINTS="{% for host in groups['master'] %}https://{{ hostvars[host].inventory_hostname }}:2379{% if not loop.last %},{% endif %}{% endfor %}"
+FLANNELD_ETCD_PREFIX="{{cluster_name}}/network/"
+FLANNELD_ETCD_CERTFILE="{{certs_dir}}/{{ansible_hostname}}.pem"
+FLANNELD_ETCD_KEYFILE="{{certs_dir}}/{{ansible_hostname}}-key.pem"
+FLANNELD_ETCD_CAFILE="{{certs_dir}}/ca.pem"
+FLANNELD_IFACE="{{ansible_default_ipv4.interface}}"
+FLANNEL_OPTIONS="-ip-masq"

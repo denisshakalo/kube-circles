@@ -1,17 +1,38 @@
-- name: Create container directory
-  file: path=/var/log/containers owner=kube state=directory mode=755
+- name: Install pre-requried packages
+  package:
+    name: socat
+    state: latest
+
+- name: Copy k8s binaries
+  copy: src={{ item.src}} dest=/usr/local/bin mode=755
+  with_items:
+    - { src: "{{sw_distribution_point}}/kube-proxy" }
+    - { src: "{{sw_distribution_point}}/kubelet" }
+    - { src: "{{sw_distribution_point}}/kubectl" }
+
+- name: Extract Containerd archive
+  unarchive:
+    src: "{{sw_distribution_point}}/cri-containerd-{{containerd_ver}}.linux-amd64.tar.gz"
+    dest: /
   tags:
-    - cont_dir
+    - containerd
 
-- name: Push node specific k8s configs
-  template: src={{ item.src }} dest={{ item.dest }}  mode=644
+- name: Copy k8s systemd scripts
+  copy: src={{ item.src}} dest=/etc/systemd/system mode=644
   with_items:
-    - { src: kubelet.j2, dest: /etc/kubernetes/kubelet }
+    - { src: kubelet.service }
+    - { src: kube-proxy.service }
 
-- name: Enable and start services on node
-  systemd: name={{ item }} enabled=yes state=restarted
+- name: Create k8s env files from template
+  template: src={{ item.src }} dest={{ item.dest }}
   with_items:
-  - docker
-  - kube-proxy
-  - kubelet
-  - flanneld
+    - { src: kubelet.j2, dest: /etc/sysconfig/kubelet }
+    - { src: kube-proxy.j2, dest: /etc/sysconfig/kube-proxy }
+
+- name: Start k8s services
+  systemd: name={{ item.name}} state=restarted daemon_reload=yes enabled=yes
+  with_items:
+    - { name: containerd }
+    - { name: cri-containerd }
+    - { name: kubelet }
+    - { name: kube-proxy }

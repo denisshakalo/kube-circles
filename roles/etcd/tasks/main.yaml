@@ -1,0 +1,38 @@
+- name: Create user
+  user:
+    name: etcd
+    groups: kube-services
+    shell: /sbin/nologin
+    home: /var/lib/etcd
+
+- name: Make etcd directories
+  file: path={{ item.path }} owner={{ item.owner }} state=directory mode=755
+  with_items:
+    - { path: /etc/etcd, owner: root }
+    - { path: /var/lib/etcd, owner: etcd }
+    - { path: /usr/local/bin, owner: root }
+
+- name: Extract archive
+  unarchive:
+    src: "{{sw_distribution_point}}/etcd-{{etcd_ver}}-linux-amd64.tar.gz"
+    dest: /usr/local/bin
+    extra_opts: [--strip-components=1]
+  tags:
+    - unzip
+
+- name: Copy etcd files
+  copy: src={{ item.src }} dest={{ item.dest }} mode={{ item.mode }}
+  with_items:
+    - { src: etcd.service, dest: /etc/systemd/system, mode: 644}
+
+- name: Create etcd env from template
+  template:
+    src: etcd.j2
+    dest: /etc/sysconfig/etcd
+
+- name: Start services
+  systemd:
+    name: etcd
+    state: restarted
+    enabled: yes
+    daemon_reload: yes

@@ -1,0 +1,45 @@
+- name: Copy RBAC config files
+  local_action: copy src={{item.src}} dest={{certs_dir}} mode=644
+  with_items:
+    - {src: cluster-role.yaml}
+    - {src: cluster-role-binding.yaml}
+
+- name: Copy k8s binaries
+  copy: src={{ item.src}} dest=/usr/local/bin mode=755
+  with_items:
+    - { src: "{{sw_distribution_point}}/kube-apiserver" }
+    - { src: "{{sw_distribution_point}}/kube-controller-manager" }
+    - { src: "{{sw_distribution_point}}/kube-scheduler" }
+    - { src: "{{sw_distribution_point}}/kubectl" }
+
+- name: Copy k8s systemd scripts
+  copy: src={{ item.src}} dest=/etc/systemd/system mode=644
+  with_items:
+    - { src: kube-apiserver.service }
+    - { src: kube-controller-manager.service }
+    - { src: kube-scheduler.service }
+
+
+- name: Create k8s env files from template
+  template: src={{ item.src }} dest={{ item.dest }}
+  with_items:
+    - {src: kube-apiserver.j2, dest: /etc/sysconfig/kube-apiserver}
+    - {src: kube-controller-manager.j2, dest: /etc/sysconfig/kube-controller-manager}
+
+- name: Start k8s services
+  systemd: name={{ item.name}} state=restarted daemon_reload=yes enabled=yes
+  with_items:
+    - { name: kube-apiserver }
+    - { name: kube-controller-manager }
+    - { name: kube-scheduler }
+
+- name: sleep for 30 seconds and continue with play
+  wait_for: timeout=30
+  delegate_to: localhost
+
+- name: Configure RBAC
+  shell: "{{ item }}"
+  with_items:
+    - kubectl apply -f {{certs_dir}}/cluster-role.yaml
+    - kubectl apply -f {{certs_dir}}/cluster-role-binding.yaml
+  run_once: true

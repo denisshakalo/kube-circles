@@ -1,0 +1,52 @@
+all:
+  children:
+    k8s:
+      vars:
+        #Have to change
+        api_server_vip: 192.168.1.33
+        management_cidr: 192.168.1.0/24
+        #Can use default settings
+        keepalived_ver: 1.4.1
+        cfssl_ver: R1.2
+        k8s_ver: v1.9.3
+        etcd_ver: v3.3.1
+        cni_ver: v0.6.0
+        flannel_ver: v0.7.0
+        containerd_ver: 1.0.0-beta.1
+        cert_expiry: 87644h
+        cert_ou: Kubernetes Your Way
+        cluster_name: kubernetes-your-way
+        sw_distribution_point: /srv/kubernetes/software
+        ca_distribution_point: /srv/kubernetes/ca
+        certs_dir: /var/lib/kubernetes
+        api_server_name: apiserver.cluster
+        cluster_cidr: 172.30.0.0/16
+        service_cluster_cidr: 10.254.0.0/16
+        cluster_server_vip: 10.254.0.1
+        cluster_dns: 10.254.3.100
+      children:
+        master:
+          hosts:
+            #Have to change
+            192.168.1.49:
+              hostname: master1.cluster
+              keepalived_priority: 200
+            #Have to change
+            192.168.1.50:
+              hostname: master2.cluster
+              keepalived_priority: 100
+            #Have to change
+            192.168.1.51:
+              hostname: master3.cluster
+              keepalived_priority: 50
+        node:
+          hosts:
+            #Have to change
+            192.168.1.52:
+              hostname: node1.cluster
+            #Have to change
+            192.168.1.53:
+              hostname: node2.cluster
+            #Have to change
+            192.168.1.54:
+              hostname: node3.cluster

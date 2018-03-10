@@ -1,0 +1,16 @@
+INTERNAL_IP={{inventory_hostname}}
+APISERVER_COUNT={{ groups['master'] | length }}
+CLIENT_CA_FILE={{certs_dir}}/ca.pem
+ETCD_CAFILE={{certs_dir}}/ca.pem
+ETCD_CERTFILE={{certs_dir}}/kubernetes.pem
+ETCD_KEYFILE={{certs_dir}}/kubernetes-key.pem
+ENC_CONFIG={{certs_dir}}/encryption-config.yaml
+KUBELET_CAFILE={{certs_dir}}/ca.pem
+KUBELET_CERTFILE={{certs_dir}}/kubernetes.pem
+KUBELET_KEYFILE={{certs_dir}}/kubernetes-key.pem
+CA_KEY={{certs_dir}}/ca-key.pem
+SERVICE_CLUSTER_CIDR={{service_cluster_cidr}}
+TLS_CAFILE={{certs_dir}}/ca.pem
+TLS_CERTFILE={{certs_dir}}/kubernetes.pem
+TLS_KEYFILE={{certs_dir}}/kubernetes-key.pem
+ETCD_SERVERS={% for host in groups['master'] %}https://{{ hostvars[host].inventory_hostname }}:2379{% if not loop.last %},{% endif %}{% endfor %}

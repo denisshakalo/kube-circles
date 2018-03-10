@@ -1,0 +1,23 @@
+- name: Create local software distribution point
+  local_action: file path={{sw_distribution_point}} owner=root state=directory mode=755
+  run_once: true
+
+- name: Download Software
+  local_action: get_url url={{ item.url }} dest={{ item.dest }} mode={{ item.mode }} force=yes timeout=20
+  with_items:
+    - { url: "http://www.keepalived.org/software/keepalived-{{keepalived_ver}}.tar.gz", dest: "{{sw_distribution_point}}", mode: 644 }
+    - { url: "https://pkg.cfssl.org/{{cfssl_ver}}/cfssl_linux-amd64", dest: "/usr/local/bin/cfssl", mode: 755 }
+    - { url: "https://pkg.cfssl.org/{{cfssl_ver}}/cfssljson_linux-amd64", dest: "/usr/local/bin/cfssljson", mode: 755 }
+    - { url: "https://github.com/coreos/etcd/releases/download/{{etcd_ver}}/etcd-{{etcd_ver}}-linux-amd64.tar.gz", dest: "{{sw_distribution_point}}", mode: 644 }
+    - { url: "https://github.com/containerd/cri-containerd/releases/download/v{{containerd_ver}}/cri-containerd-{{containerd_ver}}.linux-amd64.tar.gz", dest: "{{sw_distribution_point}}", mode: 644 }
+    - { url: "https://storage.googleapis.com/kubernetes-release/release/{{k8s_ver}}/bin/linux/amd64/kube-apiserver", dest: "{{sw_distribution_point}}", mode: 755 }
+    - { url: "https://storage.googleapis.com/kubernetes-release/release/{{k8s_ver}}/bin/linux/amd64/kube-controller-manager", dest: "{{sw_distribution_point}}", mode: 755 }
+    - { url: "https://storage.googleapis.com/kubernetes-release/release/{{k8s_ver}}/bin/linux/amd64/kube-scheduler", dest: "{{sw_distribution_point}}", mode: 755 }
+    - { url: "https://storage.googleapis.com/kubernetes-release/release/{{k8s_ver}}/bin/linux/amd64/kubectl", dest: "{{sw_distribution_point}}", mode: 755 }
+    - { url: "https://storage.googleapis.com/kubernetes-release/release/{{k8s_ver}}/bin/linux/amd64/kube-proxy", dest: "{{sw_distribution_point}}", mode: 755 }
+    - { url: "https://storage.googleapis.com/kubernetes-release/release/{{k8s_ver}}/bin/linux/amd64/kubelet", dest: "{{sw_distribution_point}}", mode: 755 }
+    - { url: "https://github.com/containernetworking/plugins/releases/download/{{cni_ver}}/cni-plugins-amd64-{{cni_ver}}.tgz", dest: "{{sw_distribution_point}}", mode: 644 }
+    - { url: "https://github.com/coreos/flannel/releases/download/{{flannel_ver}}/flanneld-amd64", dest: "{{sw_distribution_point}}", mode: 755 }
+  run_once: true
+  tags:
+    - download

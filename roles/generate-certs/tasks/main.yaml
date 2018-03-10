@@ -1,0 +1,159 @@
+- name: Create local cert directory
+  local_action: file path={{ca_distribution_point}} owner=root group=kube-services state=directory mode=750
+  run_once: true
+  tags:
+    - generate
+
+- name: Create the CA configuration files
+  local_action: template src={{ item }} dest={{ca_distribution_point}} owner=root group=kube-services mode=640
+  with_items:
+    - ca-config.json
+    - ca-csr.json
+    - admin-csr.json
+    - kube-proxy-csr.json
+    - kubernetes-csr.json
+  run_once: true
+  tags:
+    - generate
+
+- name: Genetate Management Certificates
+  local_action: shell {{ item }} chdir={{ca_distribution_point}}
+  with_items:
+    - cfssl gencert -initca ca-csr.json | cfssljson -bare ca
+    - cfssl gencert -ca=ca.pem -ca-key=ca-key.pem -config=ca-config.json
+      -profile=kubernetes admin-csr.json | cfssljson -bare admin
+    - cfssl gencert -ca=ca.pem -ca-key=ca-key.pem -config=ca-config.json
+      -profile=kubernetes kube-proxy-csr.json | cfssljson -bare kube-proxy
+    - cfssl gencert -ca=ca.pem -ca-key=ca-key.pem -config=ca-config.json
+      -hostname={{cluster_server_vip}},{% for host in groups['master'] %}{{ hostvars[host].inventory_hostname }},{% endfor %}{% for host in groups['master'] %}{{ hostvars[host].ansible_hostname }},{% endfor %}{% for host in groups['master'] %}{{ hostvars[host].hostname }},{% endfor %}{{api_server_vip}},{{api_server_name}},127.0.0.1,localhost,kubernetes.default -profile=kubernetes kubernetes-csr.json | cfssljson -bare kubernetes
+  run_once: true
+  tags:
+    - generate
+
+- name: Genetate Node Certificates onfiguration files
+  local_action: template src=node-csr.json dest={{ca_distribution_point}}/{{ansible_hostname}}-csr.json
+  when: "'node' in group_names"
+  tags:
+    - generate
+    - generate_nodeconfig
+
+- name: Genetate Node Certificates
+  local_action: shell cfssl gencert -ca=ca.pem -ca-key=ca-key.pem
+    -config=ca-config.json -hostname={{ansible_hostname}},{{hostname}},{{inventory_hostname}}
+    -profile=kubernetes {{ansible_hostname}}-csr.json | cfssljson -bare {{ansible_hostname}}
+    chdir={{ca_distribution_point}}
+  when: "'node' in group_names"
+  tags:
+    - generate
+    - generate_nodeconfig
+
+- name: Generate the kubelet Kubernetes Configuration File
+  local_action: shell {{ item }} chdir={{ca_distribution_point}}
+  with_items:
+    - "{{sw_distribution_point}}/kubectl config set-cluster {{cluster_name}}
+       --certificate-authority=ca.pem --embed-certs=true
+       --server=https://{{api_server_vip}}:6443
+       --kubeconfig={{ansible_hostname}}.kubeconfig"
+    - "{{sw_distribution_point}}/kubectl config set-credentials system:node:{{ansible_fqdn}}
+       --client-certificate={{ansible_hostname}}.pem
+       --client-key={{ansible_hostname}}-key.pem
+       --embed-certs=true
+       --kubeconfig={{ansible_hostname}}.kubeconfig"
+    - "{{sw_distribution_point}}/kubectl config set-context default
+       --cluster={{cluster_name}}
+       --user=system:node:{{ansible_fqdn}}
+       --kubeconfig={{ansible_hostname}}.kubeconfig"
+    - "{{sw_distribution_point}}/kubectl config use-context default
+      --kubeconfig={{ansible_hostname}}.kubeconfig"
+  when: "'node' in group_names"
+  tags:
+    - generate
+    - generate_nodeconfig
+
+- name: Generate The kube-proxy Kubernetes Configuration File
+  local_action: shell {{ item }} chdir={{ca_distribution_point}}
+  with_items:
+    - "{{sw_distribution_point}}/kubectl config set-cluster {{cluster_name}}
+      --certificate-authority=ca.pem
+      --embed-certs=true
+      --server=https://{{api_server_vip}}:6443
+      --kubeconfig=kube-proxy.kubeconfig"
+    - "{{sw_distribution_point}}/kubectl config set-credentials kube-proxy
+      --client-certificate=kube-proxy.pem
+      --client-key=kube-proxy-key.pem
+      --embed-certs=true
+      --kubeconfig=kube-proxy.kubeconfig"
+    - "{{sw_distribution_point}}/kubectl config set-context default
+      --cluster={{cluster_name}}
+      --user=kube-proxy
+      --kubeconfig=kube-proxy.kubeconfig"
+    - "{{sw_distribution_point}}/kubectl config use-context default
+      --kubeconfig=kube-proxy.kubeconfig"
+  run_once: true
+  tags:
+    - generate
+
+- name: Generate Encryption Key
+  local_action: shell head -c 32 /dev/urandom | base64
+  register: enc_key
+  ignore_errors: True
+  run_once: true
+  tags:
+    - generate
+
+- name: Create Encryption Config File
+  local_action: template src=encryption-config.yaml dest={{ca_distribution_point}} group=kube-services mode=640
+  run_once: true
+  tags:
+    - generate
+
+- name: Make Master and Node Certificate Directory
+  file: path={{certs_dir}} owner=root group=kube-services state=directory mode=750
+  tags:
+    - deploy
+
+- name : Distribute Node Certificates and config
+  copy: src={{ item }} dest={{certs_dir}} group=kube-services mode=640
+  with_items:
+    - "{{ca_distribution_point}}/ca.pem"
+    - "{{ca_distribution_point}}/{{ansible_hostname}}-key.pem"
+    - "{{ca_distribution_point}}/{{ansible_hostname}}.pem"
+    - "{{ca_distribution_point}}/{{ansible_hostname}}.kubeconfig"
+    - "{{ca_distribution_point}}/kube-proxy.kubeconfig"
+  when: "'node' in group_names"
+  tags:
+    - deploy
+    - deploy_kubeconfig
+
+- name : Distribute Master Certificates and configs
+  copy: src={{ item }} dest={{certs_dir}} group=kube-services mode=640
+  with_items:
+    - "{{ca_distribution_point}}/ca.pem"
+    - "{{ca_distribution_point}}/ca-key.pem"
+    - "{{ca_distribution_point}}/kubernetes-key.pem"
+    - "{{ca_distribution_point}}/kubernetes.pem"
+    - "{{ca_distribution_point}}/encryption-config.yaml"
+    - "{{ca_distribution_point}}/admin.pem"
+    - "{{ca_distribution_point}}/admin-key.pem"
+  when: "'master' in group_names"
+  tags:
+    - deploy
+    - deploy_masterconfig
+
+
+- name: Set admin context
+  shell: "{{ item }} chdir={{certs_dir}}"
+  with_items:
+    - kubectl config set-cluster {{cluster_name}}
+      --certificate-authority=ca.pem --embed-certs=true
+      --server=https://{{api_server_vip}}:6443
+    - kubectl config set-credentials admin
+      --client-certificate=admin.pem
+      --client-key=admin-key.pem
+    - kubectl config set-context {{cluster_name}}
+      --cluster={{cluster_name}} --user=admin
+    - kubectl config use-context {{cluster_name}}
+  when: "'master' in group_names"
+  tags:
+    - deploy
+    - deploy_masterconfig

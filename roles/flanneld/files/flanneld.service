@@ -1,0 +1,23 @@
+[Unit]
+Description=flannel is an etcd backed overlay network for containers
+After=network-online.target
+Wants=network-online.target
+After=etcd.service
+Before=docker.service
+
+[Service]
+Type=notify
+EnvironmentFile=-/etc/sysconfig/flanneld
+ExecStart=/usr/local/bin/flanneld \
+          -etcd-endpoints $FLANNEL_ETCD_ENDPOINTS \
+          -etcd-prefix  $FLANNELD_ETCD_PREFIX \
+          -etcd-certfile $FLANNELD_ETCD_CERTFILE \
+          -etcd-keyfile $FLANNELD_ETCD_KEYFILE \
+          -etcd-cafile $FLANNELD_ETCD_CAFILE \
+          -iface $FLANNELD_IFACE \
+          $FLANNEL_OPTIONS -logtostderr
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
+RequiredBy=docker.service

@@ -1,0 +1,67 @@
+- name: Disable firewalld
+  systemd: name={{ item }} enabled=no state=stopped
+  with_items:
+  - firewalld
+  tags:
+    - firewall
+  ignore_errors: yes
+
+- name: CentOS Packages Install
+  yum: name={{ item.name }} state={{ item.state }}
+  with_items:
+  - { name: NetworkManager, state: absent }
+  - { name: firewalld, state: absent }
+  - { name: '*', state: latest }
+  - { name: ntpdate, state: latest }
+  - { name: sysstat, state: latest }
+  - { name: ntp, state: latest }
+  ignore_errors: yes
+
+- name: set hostnames
+  hostname:
+    name: "{{hostname}}"
+  tags:
+    - hosts
+
+- name: Push hosts
+  template: src={{ item.src }} dest={{ item.dest }}  mode=644
+  with_items:
+    - { src: hosts.j2, dest: /etc/hosts }
+  tags:
+    - hosts
+
+- name: disable selinux
+  copy:
+    src: selinux
+    dest: /etc/selinux/config
+  tags:
+    - selinux
+
+- name: Restart network
+  systemd: name=network state=restarted
+  tags:
+    - net
+
+- name: Enable and start services
+  systemd: name={{ item }} enabled=yes state=restarted
+  with_items:
+  - sysstat
+  - ntpd
+
+- name: Disable swap
+  command: swapoff -a
+  tags:
+    - swap
+
+- name: Remove swapfile from /etc/fstab
+  mount:
+    name: swap
+    fstype: swap
+    state: absent
+  tags:
+    - swap
+
+- name: Create service-user group
+  group: name=kube-services state=present
+  tags:
+    - srv_group
