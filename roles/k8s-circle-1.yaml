@@ -8,3 +8,4 @@
 - import_playbook: docker.yaml
 - import_playbook: k8s-control-plane.yaml
 - import_playbook: k8s-node.yaml
+- import_playbook: nginx.yaml

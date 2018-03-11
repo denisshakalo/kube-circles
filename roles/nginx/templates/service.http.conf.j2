@@ -1,0 +1,15 @@
+upstream service_http {
+{% for host in groups['master'] %}
+server {{ hostvars[host].inventory_hostname }}:6443 max_fails=1 fail_timeout=5s;
+{% endfor %}
+}
+
+server {
+  listen 80;
+  location / {
+    proxy_pass https://service_http;
+    proxy_ssl_certificate     {{certs_dir}}/admin.pem;
+    proxy_ssl_certificate_key {{certs_dir}}/admin-key.pem;
+    proxy_ssl_trusted_certificate {{certs_dir}}/ca.pem;
+  }
+}
