@@ -18,6 +18,6 @@ vrrp_instance VI_1 {
         auth_pass fretg562c
     }
   virtual_ipaddress {
-	  {{api_server_vip}}
+	  {{api_server_vip}}/{{api_server_prefix}}
     }
 }

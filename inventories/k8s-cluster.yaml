@@ -4,6 +4,7 @@ all:
       vars:
         #Have to change
         api_server_vip: 192.168.1.33
+        api_server_prefix: 24
         management_cidr: 192.168.1.0/24
         #Can use default settings
         keepalived_ver: 1.4.1
